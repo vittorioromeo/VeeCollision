@@ -63,13 +63,14 @@ namespace VeeCollision
             AddBody(mCBody);
         }
 
-        public static List<CBody> GetBodies(CBody mCBody)
+        public static HashSet<CBody> GetBodies(CBody mCBody)
         {
-            var result = new List<CBody>();
+            var result = new HashSet<CBody>();
 
             foreach (var cell in mCBody.Cells)
                 foreach (var group in mCBody.GroupsToCheck)
-                    result.AddRange(cell.GroupedBodies[group]);
+                    foreach(var body in cell.GroupedBodies[group]) 
+                        result.Add(body);
 
             return result;
         }

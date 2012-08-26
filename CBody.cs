@@ -72,9 +72,7 @@ namespace VeeCollision
             var checkedBodies = new HashSet<CBody> {this};
             var bodiesToCheck = World.GetBodies(this);
 
-            bodiesToCheck.Sort((a, b) => Velocity.X > 0 ? a.X.CompareTo(b.X) :  b.X.CompareTo(a.X));
-
-            foreach (var body in bodiesToCheck)
+            foreach (var body in bodiesToCheck.OrderBy(x => Velocity.X > 0 ? x.X : -x.X))
             {
                 if (checkedBodies.Contains(body)) continue;
                 checkedBodies.Add(body);

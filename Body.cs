@@ -1,16 +1,18 @@
+#region
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using SFMLStart.Vectors;
-using VeeEntitySystem2012;
+
+#endregion
 
 namespace VeeCollision
 {
-    public class CBody : Component
+    public class Body
     {
         private readonly bool _isStatic;
 
-        public CBody(World mWorld, SSVector2I mPosition, bool mIsStatic, int mWidth, int mHeight)
+        public Body(World mWorld, SSVector2I mPosition, bool mIsStatic, int mWidth, int mHeight)
         {
             World = mWorld;
             Position = mPosition;
@@ -22,7 +24,6 @@ namespace VeeCollision
             GroupsToCheck = new HashSet<int>();
             GroupsToIgnoreResolve = new HashSet<int>();
         }
-
         #region Properties
         public World World { get; set; }
         public HashSet<Cell> Cells { get; set; }
@@ -33,9 +34,10 @@ namespace VeeCollision
         public HashSet<int> Groups { get; private set; }
         public HashSet<int> GroupsToCheck { get; private set; }
         public HashSet<int> GroupsToIgnoreResolve { get; private set; }
-        public Action<float, Entity, CBody> OnCollision { get; set; } 
+        public Action<float, object, Body> OnCollision { get; set; }
+        public Action OnOutOfBounds { get; set; }
+        public object UserData { get; set; }
         #endregion
-
         #region Shortcut Properties
         public int X { get { return Position.X; } }
         public int Y { get { return Position.Y; } }
@@ -48,28 +50,25 @@ namespace VeeCollision
         public int Width { get { return HalfSize.X*2; } }
         public int Height { get { return HalfSize.Y*2; } }
         #endregion
-
         #region Group-related methods
         public void AddGroups(params int[] mGroups) { foreach (var group in mGroups) Groups.Add(group); }
-        public void AddGroupsToCheck(params int[] mGroups)
-        {
-            foreach (var group in mGroups) GroupsToCheck.Add(group);
-        }
-        public void AddGroupsToIgnoreResolve(params int[] mGroups) { foreach (var group in mGroups) GroupsToIgnoreResolve.Add(group); } 
+        public void AddGroupsToCheck(params int[] mGroups) { foreach (var group in mGroups) GroupsToCheck.Add(group); }
+        public void AddGroupsToIgnoreResolve(params int[] mGroups) { foreach (var group in mGroups) GroupsToIgnoreResolve.Add(group); }
         #endregion
+        private bool IsOverlapping(Body mBody) { return Right > mBody.Left && Left < mBody.Right && (Bottom > mBody.Top && Top < mBody.Bottom); }
 
-        private bool IsOverlapping(CBody mBody) { return Right > mBody.Left && Left < mBody.Right && (Bottom > mBody.Top && Top < mBody.Bottom); }
-
-        public override void Added() { World.AddBody(this); }
-        public override void Removed() { World.RemoveBody(this); }
-        public override void Update(float mFrameTime)
+        public void Update(float mFrameTime)
         {
             if (_isStatic) return;
 
             PreviousPosition = Position;
-            Position += Velocity*mFrameTime;
 
-            var checkedBodies = new HashSet<CBody> {this};
+            var tempVelocity = new SSVector2F(Velocity.X*mFrameTime, Velocity.Y*mFrameTime);
+            var tempPosition = new SSVector2F(Position.X + tempVelocity.X, Position.Y + tempVelocity.Y);
+
+            Position = new SSVector2I((int) tempPosition.X, (int) tempPosition.Y);
+
+            var checkedBodies = new HashSet<Body> {this};
             var bodiesToCheck = World.GetBodies(this);
 
             foreach (var body in bodiesToCheck.OrderBy(x => Velocity.X > 0 ? x.X : -x.X))
@@ -79,8 +78,8 @@ namespace VeeCollision
 
                 if (!IsOverlapping(body)) continue;
 
-                if (OnCollision != null) OnCollision(mFrameTime, body.Entity, body);
-                if (body.OnCollision != null) body.OnCollision(mFrameTime, Entity, this);
+                if (OnCollision != null) OnCollision(mFrameTime, body.UserData, body);
+                if (body.OnCollision != null) body.OnCollision(mFrameTime, UserData, this);
 
                 if (GroupsToIgnoreResolve.Any(x => body.Groups.Contains(x))) continue;
 

@@ -1,12 +1,19 @@
+#region
 using System.Collections.Generic;
+using SFMLStart.Utilities;
+
+#endregion
 
 namespace VeeCollision
 {
     public class World
     {
+        private readonly int _cellSize;
         private readonly Cell[,] _cells;
-        private readonly int _columns, _rows, _cellSize, _offset;
+        private readonly int _columns;
         private readonly IEnumerable<int> _groups;
+        private readonly int _offset;
+        private readonly int _rows;
 
         public World(IEnumerable<int> mGroups, int mColumns, int mRows, int mCellSize, int mOffset = 0)
         {
@@ -20,27 +27,27 @@ namespace VeeCollision
             for (var iX = 0; iX < mColumns; iX++)
                 for (var iY = 0; iY < mRows; iY++)
                 {
-                    var left = iX * mCellSize;
+                    var left = iX*mCellSize;
                     var right = _cellSize + left;
-                    var top = iY * mCellSize;
+                    var top = iY*mCellSize;
                     var bottom = _cellSize + top;
-                    
+
                     _cells[iX, iY] = new Cell(_groups, left, right, top, bottom);
                 }
         }
 
-        private HashSet<Cell> CalculateCells(CBody mBody)
+        private HashSet<Cell> CalculateCells(Body mBody)
         {
-            var startX = mBody.Left /_cellSize + _offset;
-            var startY = mBody.Top / _cellSize + _offset;
-            var endX = mBody.Right / _cellSize + _offset;
-            var endY = mBody.Bottom / _cellSize + _offset;
+            var startX = mBody.Left/_cellSize + _offset;
+            var startY = mBody.Top/_cellSize + _offset;
+            var endX = mBody.Right/_cellSize + _offset;
+            var endY = mBody.Bottom/_cellSize + _offset;
 
             var result = new HashSet<Cell>();
 
             if (startX < 0 || endX >= _columns || startY < 0 || endY >= _rows)
             {
-                mBody.Entity.Destroy();
+                mBody.OnOutOfBounds.SafeInvoke();
                 return result;
             }
 
@@ -51,25 +58,27 @@ namespace VeeCollision
             return result;
         }
 
-        public void AddBody(CBody mCBody)
+        public void AddBody(Body mCBody)
         {
             mCBody.Cells = CalculateCells(mCBody);
             foreach (var cell in mCBody.Cells) cell.AddBody(mCBody);
         }
-        public void RemoveBody(CBody mCBody) { foreach (var cell in mCBody.Cells) cell.RemoveBody(mCBody); }
-        public void UpdateBody(CBody mCBody)
+
+        public void RemoveBody(Body mCBody) { foreach (var cell in mCBody.Cells) cell.RemoveBody(mCBody); }
+
+        public void UpdateBody(Body mCBody)
         {
             RemoveBody(mCBody);
             AddBody(mCBody);
         }
 
-        public static HashSet<CBody> GetBodies(CBody mCBody)
+        public static HashSet<Body> GetBodies(Body mCBody)
         {
-            var result = new HashSet<CBody>();
+            var result = new HashSet<Body>();
 
             foreach (var cell in mCBody.Cells)
                 foreach (var group in mCBody.GroupsToCheck)
-                    foreach(var body in cell.GroupedBodies[group]) 
+                    foreach (var body in cell.GroupedBodies[group])
                         result.Add(body);
 
             return result;

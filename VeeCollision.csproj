@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CBody.cs" />
+    <Compile Include="Body.cs" />
     <Compile Include="Cell.cs" />
     <Compile Include="World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

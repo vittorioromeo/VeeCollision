@@ -1,5 +1,8 @@
+#region
 using System.Collections.Generic;
 using System.Linq;
+
+#endregion
 
 namespace VeeCollision
 {
@@ -12,8 +15,8 @@ namespace VeeCollision
             Top = mTop;
             Bottom = mBottom;
 
-            GroupedBodies = new Dictionary<int, List<CBody>>();
-            foreach (var group in mGroups) GroupedBodies.Add(group, new List<CBody>());
+            GroupedBodies = new Dictionary<int, List<Body>>();
+            foreach (var group in mGroups) GroupedBodies.Add(group, new List<Body>());
         }
 
         public int Left { get; private set; }
@@ -21,10 +24,12 @@ namespace VeeCollision
         public int Top { get; private set; }
         public int Bottom { get; private set; }
 
-        public Dictionary<int, List<CBody>> GroupedBodies { get; private set; }
+        public Dictionary<int, List<Body>> GroupedBodies { get; private set; }
 
-        public void AddBody(CBody mBody) { foreach (var group in mBody.Groups) GroupedBodies[group].Add(mBody); }
-        public void RemoveBody(CBody mBody) { foreach (var group in mBody.Groups) GroupedBodies[group].Remove(mBody); }
+        public void AddBody(Body mBody) { foreach (var group in mBody.Groups) GroupedBodies[group].Add(mBody); }
+
+        public void RemoveBody(Body mBody) { foreach (var group in mBody.Groups) GroupedBodies[group].Remove(mBody); }
+
         public bool HasGroup(int mGroup) { return GroupedBodies[mGroup].Any(); }
     }
 }

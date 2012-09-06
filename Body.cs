@@ -24,6 +24,7 @@ namespace VeeCollision
             GroupsToCheck = new HashSet<int>();
             GroupsToIgnoreResolve = new HashSet<int>();
         }
+
         #region Properties
         public World World { get; set; }
         public HashSet<Cell> Cells { get; set; }
@@ -34,10 +35,11 @@ namespace VeeCollision
         public HashSet<int> Groups { get; private set; }
         public HashSet<int> GroupsToCheck { get; private set; }
         public HashSet<int> GroupsToIgnoreResolve { get; private set; }
-        public Action<float, object, Body> OnCollision { get; set; }
+        public Action<CollisionInfo> OnCollision { get; set; }
         public Action OnOutOfBounds { get; set; }
         public object UserData { get; set; }
         #endregion
+
         #region Shortcut Properties
         public int X { get { return Position.X; } }
         public int Y { get { return Position.Y; } }
@@ -50,11 +52,13 @@ namespace VeeCollision
         public int Width { get { return HalfSize.X*2; } }
         public int Height { get { return HalfSize.Y*2; } }
         #endregion
+
         #region Group-related methods
         public void AddGroups(params int[] mGroups) { foreach (var group in mGroups) Groups.Add(group); }
         public void AddGroupsToCheck(params int[] mGroups) { foreach (var group in mGroups) GroupsToCheck.Add(group); }
         public void AddGroupsToIgnoreResolve(params int[] mGroups) { foreach (var group in mGroups) GroupsToIgnoreResolve.Add(group); }
         #endregion
+
         private bool IsOverlapping(Body mBody) { return Right > mBody.Left && Left < mBody.Right && (Bottom > mBody.Top && Top < mBody.Bottom); }
 
         public void Update(float mFrameTime)
@@ -78,8 +82,8 @@ namespace VeeCollision
 
                 if (!IsOverlapping(body)) continue;
 
-                if (OnCollision != null) OnCollision(mFrameTime, body.UserData, body);
-                if (body.OnCollision != null) body.OnCollision(mFrameTime, UserData, this);
+                if (OnCollision != null) OnCollision(new CollisionInfo(mFrameTime, body.UserData, body));
+                if (body.OnCollision != null) body.OnCollision(new CollisionInfo(mFrameTime, UserData, this));
 
                 if (GroupsToIgnoreResolve.Any(x => body.Groups.Contains(x))) continue;
 

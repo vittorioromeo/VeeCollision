@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Body.cs" />
     <Compile Include="Cell.cs" />
+    <Compile Include="CollisionInfo.cs" />
     <Compile Include="World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -48,10 +49,6 @@
     <ProjectReference Include="..\SFMLStart\SFMLStart.csproj">
       <Project>{c8df8299-2b2e-415b-849e-4cbbc1cb4aa6}</Project>
       <Name>SFMLStart</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VeeEntitySystem2012\VeeEntitySystem2012.csproj">
-      <Project>{07789116-c18e-4a15-b8f2-bc9a83089b0d}</Project>
-      <Name>VeeEntitySystem2012</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
